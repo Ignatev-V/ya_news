@@ -1,20 +1,19 @@
 """Фикстуры для проекта."""
-# conftest.py
 import pytest
 
 from datetime import datetime, timedelta
 
 from django.conf import settings
-
-# Импортируем класс клиента.
 from django.test.client import Client
+from django.contrib.auth import get_user_model
 
-# Импортируем модель заметки, чтобы создать экземпляр.
 from news.models import News, Comment
 
 
+User = get_user_model()
+
+
 @pytest.fixture
-# Используем встроенную фикстуру для модели пользователей django_user_model.
 def author(django_user_model):
     """Фикстура создания автора."""
     return django_user_model.objects.create(username='Автор')
@@ -29,9 +28,8 @@ def not_author(django_user_model):
 @pytest.fixture
 def author_client(author):
     """Вызываем фикстуру автора."""
-    # Создаём новый экземпляр клиента, чтобы не менять глобальный.
     client = Client()
-    client.force_login(author)  # Логиним автора в клиенте.
+    client.force_login(author)
     return client
 
 
@@ -39,7 +37,7 @@ def author_client(author):
 def not_author_client(not_author):
     """Фикстура создания клиента НеАвтора."""
     client = Client()
-    client.force_login(not_author)  # Логиним обычного пользователя в клиенте.
+    client.force_login(not_author)
     return client
 
 
@@ -63,7 +61,7 @@ def comment(author, news_page):
     comment = Comment.objects.create(
         news=news_page,
         author=author,
-        text="Текст коммента",
+        text="Текст",
     )
     return comment
 
@@ -81,6 +79,23 @@ def news_page():
 @pytest.fixture
 def slug_for_args(note):
     """Фикстура запрашивает другую фикстуру создания заметки."""
-    # И возвращает кортеж, который содержит slug заметки.
-    # На то, что это кортеж, указывает запятая в конце выражения.
     return (news.slug,)
+
+
+@pytest.fixture
+def form_data(news_page, author):
+    """Фикстура полей формы."""
+    return {
+        "news": news_page,
+        "author": author,
+        "text": "Текст",
+    }
+
+
+@pytest.fixture
+def reader_client():
+    """Фикстура другого читателя."""
+    reader = User.objects.create(username="Читатель")
+    reader_client = Client()
+    reader_client.force_login(reader)
+    return reader_client
