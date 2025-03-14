@@ -5,13 +5,8 @@ from http import HTTPStatus
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
-NEWS_HOME = 'news:home'
-LOGIN_URL = 'users:login'
-LOGOUT_URL = 'users:logout'
-SIGNUP_URL = 'users:signup'
-NEWS_DELETE_URL = 'news:delete'
-NEWS_EDIT_URL = 'news:edit'
-NEWS_DETAIL_URL = 'news:detail'
+from .utils import (NEWS_HOME, LOGIN_URL, LOGOUT_URL, SIGNUP_URL,
+                    NEWS_DELETE_URL, NEWS_EDIT_URL, NEWS_DETAIL_URL)
 
 
 @pytest.mark.django_db
