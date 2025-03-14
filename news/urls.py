@@ -1,3 +1,4 @@
+"""Маршруты приложения news."""
 from django.urls import path
 
 from news import views
