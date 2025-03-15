@@ -1,11 +1,11 @@
 """Фикстуры для проекта."""
-import pytest
-
 from datetime import datetime, timedelta
 
+import pytest
 from django.conf import settings
 from django.test.client import Client
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from news.models import News, Comment
 
@@ -20,8 +20,8 @@ def author(django_user_model):
 
 
 @pytest.fixture
-def not_author(django_user_model):
-    """Фикстура не для автора."""
+def reader(django_user_model):
+    """Фикстура создания читателя."""
     return django_user_model.objects.create(username='Не автор')
 
 
@@ -34,11 +34,11 @@ def author_client(author):
 
 
 @pytest.fixture
-def not_author_client(not_author):
-    """Фикстура создания клиента НеАвтора."""
-    client = Client()
-    client.force_login(not_author)
-    return client
+def reader_client(reader):
+    """Фикстура создания клиента Читателя."""
+    reader_client = Client()
+    reader_client.force_login(reader)
+    return reader_client
 
 
 @pytest.fixture
@@ -77,25 +77,40 @@ def news_page():
 
 
 @pytest.fixture
-def slug_for_args(note):
-    """Фикстура запрашивает другую фикстуру создания заметки."""
-    return (news.slug,)
+def comments(news_page, author):
+    """Фикстура для создания комментариев."""
+    now = timezone.now()
+    comments_list = []
+    for index in range(settings.NEWS_COUNT_ON_HOME_PAGE):
+        comment = Comment.objects.create(
+            news=news_page,
+            author=author,
+            text=f"Текст комментария {index}",
+        )
+        comment.created = now + timedelta(days=index)
+        comment.save()
+        comments_list.append(comment)
+    return comments_list
 
 
 @pytest.fixture
 def form_data(news_page, author):
     """Фикстура полей формы."""
     return {
-        "news": news_page,
-        "author": author,
-        "text": "Текст",
+        'news': news_page.pk,
+        'author': author.pk,
+        'text': "Текст",
     }
 
 
 @pytest.fixture
-def reader_client():
-    """Фикстура другого читателя."""
-    reader = User.objects.create(username="Читатель")
-    reader_client = Client()
-    reader_client.force_login(reader)
-    return reader_client
+def pk_for_args(comment):
+    """Фикстура ид коммента."""
+    return (comment.pk,)
+
+
+@pytest.fixture(autouse=True)
+def clear_database(db):
+    """Фикстура для очистки базы данных перед каждым тестом."""
+    yield  # Тест будет выполнен здесь
+    Comment.objects.all().delete()

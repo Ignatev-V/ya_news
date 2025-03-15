@@ -108,7 +108,7 @@ class TestDetailPage(TestCase):
         self.assertEqual(all_timestamps, sorted_timestamps)
 
     def test_anonymous_client_has_no_form(self):
-        """Проверка что Анонима форма Комментова не видна."""
+        """Проверка что Анонима форма Комментов не видна."""
         response = self.client.get(self.detail_url)
         self.assertNotIn('form', response.context)
 
