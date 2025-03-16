@@ -3,9 +3,11 @@ from datetime import datetime, timedelta
 
 import pytest
 from django.conf import settings
-from django.test.client import Client
 from django.contrib.auth import get_user_model
+from django.test.client import Client
+from django.urls import reverse
 from django.utils import timezone
+
 
 from news.models import News, Comment
 
@@ -86,31 +88,49 @@ def comments(news_page, author):
             news=news_page,
             author=author,
             text=f"Текст комментария {index}",
+            created=now + timedelta(days=index)
         )
-        comment.created = now + timedelta(days=index)
-        comment.save()
         comments_list.append(comment)
     return comments_list
 
 
 @pytest.fixture
-def form_data(news_page, author):
-    """Фикстура полей формы."""
-    return {
-        'news': news_page.pk,
-        'author': author.pk,
-        'text': "Текст",
-    }
+def login_url():
+    """Фикстура для URL логина."""
+    return reverse('users:login')
 
 
 @pytest.fixture
-def pk_for_args(comment):
-    """Фикстура ид коммента."""
-    return (comment.pk,)
+def logout_url():
+    """Фикстура для URL логаута."""
+    return reverse('users:logout')
 
 
-@pytest.fixture(autouse=True)
-def clear_database(db):
-    """Фикстура для очистки базы данных перед каждым тестом."""
-    yield  # Тест будет выполнен здесь
-    Comment.objects.all().delete()
+@pytest.fixture
+def signup_url():
+    """Фикстура для URL авторизации."""
+    return reverse('users:signup')
+
+
+@pytest.fixture
+def news_home():
+    """Фикстура для URL Главной страницы."""
+    return reverse('news:home')
+
+
+@pytest.fixture
+def news_delete_url(comment):
+    """Фикстура для URL удаления комментария."""
+    return reverse('news:delete', args=[comment.pk])
+
+
+@pytest.fixture
+def news_edit_url(comment):
+    """Фикстура для URL редактирования комментария."""
+    return reverse('news:edit', args=[comment.pk])
+
+
+@pytest.fixture
+def news_detail_url(news_page):
+    """Фикстура для URL редактирования комментария."""
+    return reverse('news:detail', args=[news_page.pk])
