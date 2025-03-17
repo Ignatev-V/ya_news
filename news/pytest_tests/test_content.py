@@ -7,14 +7,16 @@ from news.forms import CommentForm
 pytestmark = pytest.mark.django_db
 
 
-def test_news_per_page_on_home_page(client, news, news_home):
+@pytest.mark.usefixtures('news')
+def test_news_per_page_on_home_page(client, news_home):
     """Проверка на количество новостей на главной странице."""
     response = client.get(news_home)
     news_per_page = response.context['object_list'].count()
     assert news_per_page == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
-def test_news_sort_from_new_to_old(client, news, news_home):
+@pytest.mark.usefixtures('news')
+def test_news_sort_from_new_to_old(client, news_home):
     """Новости отсортированы от самой свежей к самой старой."""
     response = client.get(news_home)
     object_list = response.context.get('object_list')
@@ -23,7 +25,8 @@ def test_news_sort_from_new_to_old(client, news, news_home):
     assert all_dates == sorted_dates
 
 
-def test_comments_sort_from_old_to_new(news_page, client, comments,
+@pytest.mark.usefixtures('comments')
+def test_comments_sort_from_old_to_new(news_page, client,
                                        news_detail_url):
     """Проверка сортировки комментариев."""
     response = client.get(news_detail_url)

@@ -6,10 +6,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test.client import Client
 from django.urls import reverse
-from django.utils import timezone
 
-
-from news.models import News, Comment
+from news.models import Comment, News
 
 
 User = get_user_model()
@@ -81,17 +79,12 @@ def news_page():
 @pytest.fixture
 def comments(news_page, author):
     """Фикстура для создания комментариев."""
-    now = timezone.now()
-    comments_list = []
     for index in range(settings.NEWS_COUNT_ON_HOME_PAGE):
-        comment = Comment.objects.create(
+        Comment.objects.create(
             news=news_page,
             author=author,
-            text=f"Текст комментария {index}",
-            created=now + timedelta(days=index)
+            text=f"Текст комментария {index}"
         )
-        comments_list.append(comment)
-    return comments_list
 
 
 @pytest.fixture
