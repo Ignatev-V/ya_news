@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test.client import Client
 from django.urls import reverse
+from django.utils import timezone
 
 from news.models import Comment, News
 
@@ -47,8 +48,8 @@ def news():
     today = datetime.today()
     News.objects.bulk_create(
         News(
-            title=f"Новость {index}",
-            text=f"Текст новости {index}",
+            title=f'Новость {index}',
+            text=f'Текст новости {index}',
             date=today - timedelta(days=index),
         )
         for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
@@ -61,7 +62,7 @@ def comment(author, news_page):
     comment = Comment.objects.create(
         news=news_page,
         author=author,
-        text="Текст",
+        text='Текст',
     )
     return comment
 
@@ -70,8 +71,8 @@ def comment(author, news_page):
 def news_page():
     """Фикстура страницы новостей."""
     news_page = News.objects.create(
-        title="Заголовок новости",
-        text="Текст новости",
+        title='Заголовок новости',
+        text='Текст новости',
     )
     return news_page
 
@@ -79,12 +80,15 @@ def news_page():
 @pytest.fixture
 def comments(news_page, author):
     """Фикстура для создания комментариев."""
+    now = timezone.now()
     for index in range(settings.NEWS_COUNT_ON_HOME_PAGE):
-        Comment.objects.create(
+        comment = Comment(
             news=news_page,
             author=author,
-            text=f"Текст комментария {index}"
+            text=f'Текст комментария {index}',
         )
+        comment.created = now - timedelta(minutes=index)
+        comment.save()
 
 
 @pytest.fixture

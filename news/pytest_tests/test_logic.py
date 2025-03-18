@@ -20,9 +20,8 @@ def clear_database(db):
 def test_anonymous_user_cant_send_comment(client, author, news_page,
                                           login_url, news_detail_url):
     """Анонимный пользователь не может отправить комментарий."""
-    data = NEWS_FORM_DATA.copy()
     cnt_comments_before = Comment.objects.count()
-    response = client.post(news_detail_url, data=data)
+    response = client.post(news_detail_url, data=NEWS_FORM_DATA)
     expected_url = f'{login_url}?next={news_detail_url}'
     assertRedirects(response, expected_url)
     assert cnt_comments_before == Comment.objects.count()
@@ -32,13 +31,12 @@ def test_auth_user_can_send_comment(news_page, author_client,
                                     author, news_detail_url):
     """Авторизованный пользователь может отправить комментарий."""
     clear_database(Comment)
-    data = NEWS_FORM_DATA.copy()
-    response = author_client.post(news_detail_url, data=data)
+    response = author_client.post(news_detail_url, data=NEWS_FORM_DATA)
     assertRedirects(response, f'{news_detail_url}#comments')
     assert Comment.objects.count() == 1
     comment = Comment.objects.get()
     assert comment.news.pk == news_page.pk
-    assert comment.text == data['text']
+    assert comment.text == NEWS_FORM_DATA['text']
     assert comment.author == author
 
 
